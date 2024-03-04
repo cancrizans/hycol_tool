@@ -1,7 +1,7 @@
 extern crate console_error_panic_hook;
 use std::panic;
 
-use hycol::{H99,SRGB};
+use hycol::{H99,SRGB,meshed_triangle};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::Clamped;
 use web_sys::{CanvasRenderingContext2d, ImageData};
@@ -91,5 +91,49 @@ pub fn draw_triangle(
     let data = ImageData::new_with_u8_clamped_array_and_sh(Clamped(&data), size,size).unwrap();
     ctx.put_image_data(&data, 0.0, 0.0).unwrap();
 
+
+}
+
+#[wasm_bindgen]
+pub fn draw_meshed_triangle(
+    ctx: &CanvasRenderingContext2d,
+    size: u32,
+    v1 : JSCol,
+    v2 : JSCol,
+    v3 : JSCol
+){
+    ctx.clear_rect(0., 0., size as f64, size as f64);
+
+    let vrgb1 : SRGB = v1.into();
+    let vrgb2 : SRGB = v2.into();
+    let vrgb3 : SRGB = v3.into();
+
+    assert!(vrgb1.in_gamut());
+    assert!(vrgb2.in_gamut());
+    assert!(vrgb3.in_gamut());
+
+    let c1 : H99 = vrgb1.into();
+    let c2 : H99 = vrgb2.into();
+    let c3 : H99 = vrgb3.into();
+
+    let points = meshed_triangle(c1,c2,c3,7);
+
+
+    let scale = (size as f64)/4.0;
+    let hsize = (size as f64)/2.0;
+    for point in points{
+        let ((px,py),col) = point;
+
+        let rs = 20.0;
+        let x = scale * px + hsize - rs;
+        let y = scale * py + hsize - rs;
+        
+        let rgb : SRGB = col.into();
+
+        ctx.set_fill_style(&rgb.to_html().into());
+        ctx.fill_rect(x, y, rs*2.0, rs*2.0);
+
+
+    }
 
 }

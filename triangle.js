@@ -1,4 +1,7 @@
-import init, {my_init_function, make_jscol, draw_triangle} from './pkg/hycol_tool.js';
+import init, {
+    my_init_function, 
+    make_jscol, 
+    draw_triangle,draw_meshed_triangle} from './pkg/hycol_tool.js';
 
 
 init().then((_exports) => {
@@ -6,6 +9,9 @@ init().then((_exports) => {
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+
+    const meshed_canvas = document.getElementById('meshed');
+    const meshed_ctx = meshed_canvas.getContext('2d');
 
     const picker1 = document.getElementById('pkr_v1');
     const picker2 = document.getElementById('pkr_v2');
@@ -27,6 +33,11 @@ init().then((_exports) => {
         
 
         draw_triangle(ctx,canvas.width,c1,c2,c3);
+
+        const c1c = hex2JSCol(picker1.value);
+        const c2c = hex2JSCol(picker2.value);
+        const c3c = hex2JSCol(picker3.value);
+        draw_meshed_triangle(meshed_ctx,meshed_canvas.width,c1c,c2c,c3c);
     });
 
 })
