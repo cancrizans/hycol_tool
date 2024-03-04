@@ -1,0 +1,14 @@
+{
+  "name": "hycol_tool",
+  "version": "0.1.0",
+  "files": [
+    "hycol_tool_bg.wasm",
+    "hycol_tool.js",
+    "hycol_tool.d.ts"
+  ],
+  "module": "hycol_tool.js",
+  "types": "hycol_tool.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
