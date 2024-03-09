@@ -310,16 +310,30 @@ init().then(()=>{
 
 
 
-	var hue_grid = undefined;
+	const hue_grid_geom = new THREE.BufferGeometry();
+	const hue_grid = new THREE.LineSegments(hue_grid_geom,new THREE.LineBasicMaterial( {color: 0x000000}));
 	var hue_divs = 14;
+	scene.add(hue_grid)
 
 	function update_hue_grid(){
-		if(hue_grid != undefined){
-			scene.remove(hue_grid);
+
+		let hue_pts = [];
+		for(let k = 0; k<hue_divs;k++){
+			let theta = Math.PI*2*k/hue_divs;
+			let s = Math.sin(theta);
+			let c = Math.cos(theta);
+
+			hue_pts.push(0,0,0);
+			const hur = 0.7;
+			hue_pts.push(hur*c,0,hur*s);
 		}
 
-		hue_grid = new THREE.PolarGridHelper( 0.75, hue_divs, 6, 64 );
-		scene.add( hue_grid );
+		hue_grid_geom.setAttribute('position',new THREE.BufferAttribute(new Float32Array(hue_pts),3));
+
+		hue_grid_geom.getAttribute('position').needsUpdate = true;
+		hue_grid_geom.computeBoundingBox();
+		hue_grid_geom.computeBoundingSphere();
+		console.log("Grid update");
 	}
 
 	document.querySelector("#hue_divisions").addEventListener("change",function(){
