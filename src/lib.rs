@@ -264,3 +264,21 @@ pub fn get_gamut_cage(seg_idx: usize,temperature : f64, subd:usize) -> Vec<Color
             temperature)
     ).collect()
 }
+
+
+#[wasm_bindgen]
+pub struct Point2{
+    pub x : f64,
+    pub y : f64
+}
+
+#[wasm_bindgen]
+pub fn get_isotherm(temperature : f64) -> Vec<Point2>{
+    const M : i32 = 8;
+    let exp_t = temperature.exp();
+    let x = (-M..=M).map(|i| 2.*exp_t*(i as f64)/(M as f64));
+    let z = x.map(|xx| Complex{re:xx,im:exp_t});
+    let w = z.map(|zz| (zz - Complex::i())/(zz + Complex::i()));
+
+    w.map(|w|Point2{x:w.re,y:w.im}).collect()
+}

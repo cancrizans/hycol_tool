@@ -3,12 +3,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import SpriteText from 'three-spritetext';
 
 import Picker from 'vanilla-picker';
+import '@simonwep/pickr/dist/themes/nano.min.css';
+import Pickr from '@simonwep/pickr';
 
 
 import init,{
 	my_init_function,get_neutral,temp_boost, 
 	JSCol, get_meshed_triangle,color_to_dot,
-	get_gamut_cage} from './pkg/hycol_tool.js';
+	get_gamut_cage, get_isotherm} from './pkg/hycol_tool.js';
 
 
 init().then(()=>{
@@ -76,23 +78,58 @@ init().then(()=>{
 		var polpick = document.createElement("div");
 		polpick.setAttribute('class','pole-picker');
 		document.querySelector("#poles").appendChild(polpick);
-		
-		var pckr = new Picker(polpick);
-		pckr.setOptions({popup:'down'});
-		pckr.setColor("#aaaaaa");
-		pckr.onChange = function(pp,color){
-			pp.style.background = color.rgbaString;
-			
 
+
+		
+		// var pckr = new Picker(polpick);
+		// pckr.setOptions({popup:'down'});
+		// pckr.setColor("#aaaaaa");
+
+		let pckr_el = document.createElement("div");
+		pckr_el.setAttribute('id','replacepickr');
+		polpick.appendChild(pckr_el);
+
+		let pckr = Pickr.create({
+			el:"#replacepickr",
+			container:document.body,
+			theme:'nano',
+			inline:false,
+			components: {
+				preview: true,
+				opacity: false,
+				hue: true,
+				// Input / output Options
+				interaction: {
+				  hex: true,
+				  rgba: true,
+				  
+				  input: true
+				  
+				}
+			  },
+
+			position:'left-middle',
+			autoReposition:false
+		});
+
+		pckr.on('change', function(color,_,__){
+			//polpick.style.background = color.rgbaString;
+			pckr.applyColor();
+			
 			//let arr = color.rgba;
 			poles[i] = color;
 
 			updateDots();
 			
-		}.bind(null,polpick);
+		});
 
-		poles.push(pckr.color);
-		polpick.style.background = pckr.color.rgbaString;
+		pckr.on("show", (color, instance) => { 
+			const style = instance.getRoot().app.style;
+			style.left = "150px";
+		});
+
+		poles.push(pckr.getColor());
+		//polpick.style.background = pckr.getColor().toRGBA().toString();
 		polar_pickers.push(polpick);
 
 		let pole_label = new SpriteText(i,0.05,'#000');
@@ -130,10 +167,16 @@ init().then(()=>{
 	document.querySelector("#display_cage").addEventListener("change",function(){
 		gamut.visible = this.checked;
 	});
+	document.querySelector("#display_hue").addEventListener("change",function(){
+		hue_grid.visible = this.checked;
+	});
+	document.querySelector("#display_isotherms").addEventListener("change",function(){
+		isotherms.visible = this.checked;
+	});
 
 
 	function pkdcol_to_jscol(pkdcol){
-		let rgba = pkdcol.rgba;
+		let rgba = pkdcol.toRGBA();
 		return new JSCol(rgba[0],rgba[1],rgba[2]);
 	}
 
@@ -144,6 +187,8 @@ init().then(()=>{
 
 
 	function updateDots(){
+		let dotsbuff = [];
+
 		
 		let boosted_N0 = temp_boost(N0dot,temperature);
 		N0label.position.set(boosted_N0.posx,0,boosted_N0.posz);
@@ -156,7 +201,8 @@ init().then(()=>{
 		let lineverts = [];
 
 		for(const [pidx,pole] of poles.entries()){
-			const pb = temp_boost(color_to_dot(pkdcol_to_jscol(pole)),temperature);
+			let poledot = color_to_dot(pkdcol_to_jscol(pole));
+			const pb = temp_boost(poledot,temperature);
 			lineverts.push(pb.posx);
 			lineverts.push(pb.posy);
 			lineverts.push(pb.posz);
@@ -165,6 +211,8 @@ init().then(()=>{
 			lineverts.push(pb.posz);
 
 			pole_labels[pidx].position.set(pb.posx,pb.posy,pb.posz);
+
+			dotsbuff.push(poledot);
 		}
 
 
@@ -184,18 +232,25 @@ init().then(()=>{
 				pkdcol_to_jscol(p3),7);
 
 			for(const col of triangle){
-				const cb = temp_boost(col,temperature);
+				dotsbuff.push(col);
 
-				verts.push(cb.posx);
-				verts.push(cb.posy);
-				verts.push(cb.posz);
-
-				
-				cols.push(cb.color.rfloat());
-				cols.push(cb.color.gfloat());
-				cols.push(cb.color.bfloat());
-				
 			}
+
+			
+		}
+
+		for(const dot of dotsbuff){
+			const cb = temp_boost(dot,temperature);
+
+			verts.push(cb.posx);
+			verts.push(cb.posy);
+			verts.push(cb.posz);
+
+			
+			cols.push(cb.color.rfloat());
+			cols.push(cb.color.gfloat());
+			cols.push(cb.color.bfloat());
+				
 		}
 
 		dots_geometry.setAttribute( 'position', new THREE.BufferAttribute( 
@@ -232,6 +287,12 @@ init().then(()=>{
 		});
 	}
 
+	const isotherms_geom = new THREE.BufferGeometry();
+	const isoth_material = new THREE.LineBasicMaterial({color:'#888'});
+	const isotherms = new THREE.LineSegments(isotherms_geom,isoth_material);
+	scene.add(isotherms);
+
+
 	function update_neutral(){
 		var neut_dot = get_neutral(temperature);
 		var neutral = neut_dot.color.to_hex();
@@ -263,6 +324,27 @@ init().then(()=>{
 		gamut_geom.getAttribute('color').needsUpdate = true;
 		gamut_geom.computeBoundingBox();
 		gamut_geom.computeBoundingSphere();
+
+
+		let isoth_verts = [];
+
+		for(let temp = -1.2; temp <= 1.75; temp += 0.25){
+			let deltatemp = temp - temperature;
+			let isopts = get_isotherm(deltatemp);
+			
+			for(let i = 0; i<isopts.length-1;i++){
+				let p1 = isopts[i];
+				let p2 = isopts[i+1];
+				isoth_verts.push(p1.x,0,p1.y);
+				isoth_verts.push(p2.x,0,p2.y);
+			}
+		}
+		isotherms_geom.setAttribute('position',new THREE.BufferAttribute(
+			new Float32Array(isoth_verts),3
+		));
+		isotherms_geom.getAttribute('position').needsUpdate=true;
+		isotherms_geom.computeBoundingBox();
+		isotherms_geom.computeBoundingSphere();
 
 
 		updateDots();

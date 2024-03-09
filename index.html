@@ -21,6 +21,14 @@
                 <label for="display_cage">Display gamut cage</label>
             </div>
             <div>
+                <input type="checkbox" id="display_hue" checked="true">
+                <label for="display_hue">Display hue wheel</label>
+            </div>
+            <div>
+                <input type="checkbox" id="display_isotherms" checked="true">
+                <label for="display_isotherms">Display isotherms</label>
+            </div>
+            <div>
                 <input 
                     type="range"
                     min="2"
@@ -49,10 +57,13 @@
 
         <div class="subpanel">
             <h2>Poles</h2>
+            
             <div id="poles">
                 
             </div>
             <button id="add_pole">Add</button>
+
+            <div id="poles-colorpick"></div>
         </div>
 
         <div class="subpanel">

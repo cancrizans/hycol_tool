@@ -346,6 +346,24 @@ export function get_gamut_cage(seg_idx, temperature, subd) {
     }
 }
 
+/**
+* @param {number} temperature
+* @returns {(Point2)[]}
+*/
+export function get_isotherm(temperature) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.get_isotherm(retptr, temperature);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        var v1 = getArrayJsValueFromWasm0(r0, r1).slice();
+        wasm.__wbindgen_free(r0, r1 * 4, 4);
+        return v1;
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+}
+
 function handleError(f, args) {
     try {
         return f.apply(this, args);
@@ -528,6 +546,60 @@ export class JSCol {
     }
 }
 
+const Point2Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_point2_free(ptr >>> 0));
+/**
+*/
+export class Point2 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Point2.prototype);
+        obj.__wbg_ptr = ptr;
+        Point2Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Point2Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_point2_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get x() {
+        const ret = wasm.__wbg_get_colordot_posx(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set x(arg0) {
+        wasm.__wbg_set_colordot_posx(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get y() {
+        const ret = wasm.__wbg_get_colordot_posy(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set y(arg0) {
+        wasm.__wbg_set_colordot_posy(this.__wbg_ptr, arg0);
+    }
+}
+
 async function __wbg_load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
         if (typeof WebAssembly.instantiateStreaming === 'function') {
@@ -567,6 +639,10 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
         const ret = getStringFromWasm0(arg0, arg1);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_point2_new = function(arg0) {
+        const ret = Point2.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_colordot_new = function(arg0) {

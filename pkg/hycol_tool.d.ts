@@ -58,6 +58,11 @@ export function get_meshed_triangle(v1: JSCol, v2: JSCol, v3: JSCol, n: number):
 */
 export function get_gamut_cage(seg_idx: number, temperature: number, subd: number): (ColorDot)[];
 /**
+* @param {number} temperature
+* @returns {(Point2)[]}
+*/
+export function get_isotherm(temperature: number): (Point2)[];
+/**
 */
 export class ColorDot {
   free(): void;
@@ -101,6 +106,17 @@ export class JSCol {
 */
   bfloat(): number;
 }
+/**
+*/
+export class Point2 {
+  free(): void;
+/**
+*/
+  x: number;
+/**
+*/
+  y: number;
+}
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -129,6 +145,12 @@ export interface InitOutput {
   readonly temp_boost: (a: number, b: number) => number;
   readonly get_meshed_triangle: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly get_gamut_cage: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_point2_free: (a: number) => void;
+  readonly get_isotherm: (a: number, b: number) => void;
+  readonly __wbg_set_point2_x: (a: number, b: number) => void;
+  readonly __wbg_set_point2_y: (a: number, b: number) => void;
+  readonly __wbg_get_point2_x: (a: number) => number;
+  readonly __wbg_get_point2_y: (a: number) => number;
   readonly make_jscol: (a: number, b: number, c: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
