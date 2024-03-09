@@ -18,7 +18,7 @@ init().then(()=>{
 
 	const scene = new THREE.Scene();
 	const fsize = 1.5;
-	const aspect = window.innerWidth / window.innerHeight;
+	let aspect = window.innerWidth / window.innerHeight;
 	const camera = new THREE.OrthographicCamera(
 		-aspect * fsize, aspect * fsize,
 		fsize, -fsize,
@@ -78,6 +78,7 @@ init().then(()=>{
 		document.querySelector("#poles").appendChild(polpick);
 		
 		var pckr = new Picker(polpick);
+		pckr.setOptions({popup:'down'});
 		pckr.setColor("#aaaaaa");
 		pckr.onChange = function(pp,color){
 			pp.style.background = color.rgbaString;
@@ -289,7 +290,17 @@ init().then(()=>{
 	renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 	renderer.gammaOutput = true;
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	document.body.appendChild( renderer.domElement );
+	addEventListener("resize",(_)=>{
+		
+		let aspect = window.innerWidth / window.innerHeight;
+		camera.left = -aspect * fsize;
+		camera.right = aspect * fsize;
+		
+    	camera.updateProjectionMatrix();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+	
+	});
+	document.querySelector("#canvas-container").appendChild( renderer.domElement );
 
 	const controls = new OrbitControls( camera, renderer.domElement );
 				controls.target.set( 0, 0.0, 0 );
