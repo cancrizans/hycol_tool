@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "rangeslider.js": "^2.3.3",
+    "three": "^0.162.0",
+    "three-spritetext": "^1.8.2",
+    "vanilla-picker": "^2.12.2"
+  },
+  "devDependencies": {
+    "vite": "^5.1.5"
+  },
+  
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+
+}

@@ -1,0 +1,29 @@
+#panel{
+	position: absolute;
+	right: 0px;
+	z-index: 100;
+	display: block;
+	background-color: rgba(0,0,0,0.3);
+	padding: 20px;
+	color: white;
+
+	width: 20%;
+	height: 100%;
+	overflow: scroll;
+}
+
+.pole-picker {
+	width: 50px;
+	height: 50px;
+	border: 1px;
+	border-color: black;
+	background-color: green;
+
+	border-radius: 15px;
+}
+
+#poles {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}

@@ -5,9 +5,65 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>hycol_tool</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" type="text/css" href="style.css">
     
 </head>
 <body>
-    <a href="triangle.html">triangle</a>
+    <div id="panel">
+        
+        <h1>HYCOL_tool</h1>
+
+        <div class="subpanel">
+            <h2>Display Options</h2>
+            <div>
+                <input type="checkbox" id="display_cage" checked="true">
+                <label for="display_cage">Display gamut cage</label>
+            </div>
+            <div>
+                <input 
+                    type="range"
+                    min="2"
+                    max="32"
+                    value="14"
+                    step="1"
+                    id="hue_divisions"
+                    >
+                <span id="hue-divisions-lbl">14</span>
+                <label for="hue_divisions">Number of hue divisions</label>
+            </div>
+        </div>
+
+        <div class="subpanel">
+            <h2>Whitepoint</h2>
+            <input 
+                type="range" 
+                min="-0.4" 
+                max="0.4" 
+                value="0.0" 
+                step="0.01"
+                class="slider" 
+                id="neutral-temp">
+            <span id="neutral-temp-lbl"></span>
+        </div>
+
+        <div class="subpanel">
+            <h2>Poles</h2>
+            <div id="poles">
+                
+            </div>
+            <button id="add_pole">Add</button>
+        </div>
+
+        <div class="subpanel">
+            <h2>Fields</h2>
+            <div id="fields">
+                
+            </div>
+
+            <button id="add_field">Add</button>
+        </div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
 </body>
 </html>

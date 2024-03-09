@@ -67,6 +67,7 @@ dependencies = [
  "console_error_panic_hook",
  "hycol",
  "js-sys",
+ "num-complex",
  "wasm-bindgen",
  "web-sys",
 ]
