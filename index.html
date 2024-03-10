@@ -12,7 +12,7 @@
     <div id="canvas-container"></div>
     <div id="panel">
         
-        <h1>HYCOL_tool</h1>
+        <h1>HYCOL-tool</h1>
 
         <div class="subpanel">
             <h2>Display Options</h2>
@@ -25,10 +25,7 @@
                 <label for="display_hue">Display hue wheel</label>
             </div>
             <div>
-                <input type="checkbox" id="display_isotherms" checked="true">
-                <label for="display_isotherms">Display isotherms</label>
-            </div>
-            <div>
+                <label for="hue_divisions">Number of hue divisions:</label>
                 <input 
                     type="range"
                     min="2"
@@ -38,12 +35,22 @@
                     id="hue_divisions"
                     >
                 <span id="hue-divisions-lbl">14</span>
-                <label for="hue_divisions">Number of hue divisions</label>
+                
             </div>
+            <div>
+                <input type="checkbox" id="display_isotherms" checked="true">
+                <label for="display_isotherms">Display isotherms</label>
+            </div>
+            <div>
+                <input type="checkbox" id="display_values" checked="true">
+                <label for="display_values">Display value levels</label>
+            </div>
+            
         </div>
 
         <div class="subpanel">
             <h2>Whitepoint</h2>
+            <label for="neutral-temp">Temperature of whitepoint:</label>
             <input 
                 type="range" 
                 min="-0.4" 
@@ -61,7 +68,7 @@
             <div id="poles">
                 
             </div>
-            <button id="add_pole">Add</button>
+            <button id="add_pole" class="obj-btn add-btn">+</button>
 
             <div id="poles-colorpick"></div>
         </div>
@@ -72,7 +79,7 @@
                 
             </div>
 
-            <button id="add_field">Add</button>
+            <button id="add_field" class="obj-btn add-btn">+</button>
         </div>
     </div>
 

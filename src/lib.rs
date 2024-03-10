@@ -282,3 +282,11 @@ pub fn get_isotherm(temperature : f64) -> Vec<Point2>{
 
     w.map(|w|Point2{x:w.re,y:w.im}).collect()
 }
+
+
+#[wasm_bindgen]
+pub fn get_luma_steps() -> Vec<ColorDot>{
+    let lumas = (-5..=5).filter(|&i|i!=0).map(|i| 50. +  10.*(i as f64));
+
+    lumas.map(|l|ColorDot::from(Hycol::new(l,0.0.into()))).collect()
+}

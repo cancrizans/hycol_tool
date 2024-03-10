@@ -26,6 +26,7 @@ export function get_meshed_triangle(a: number, b: number, c: number, d: number, 
 export function get_gamut_cage(a: number, b: number, c: number, d: number): void;
 export function __wbg_point2_free(a: number): void;
 export function get_isotherm(a: number, b: number): void;
+export function get_luma_steps(a: number): void;
 export function __wbg_set_point2_x(a: number, b: number): void;
 export function __wbg_set_point2_y(a: number, b: number): void;
 export function __wbg_get_point2_x(a: number): number;

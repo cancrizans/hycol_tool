@@ -63,6 +63,10 @@ export function get_gamut_cage(seg_idx: number, temperature: number, subd: numbe
 */
 export function get_isotherm(temperature: number): (Point2)[];
 /**
+* @returns {(ColorDot)[]}
+*/
+export function get_luma_steps(): (ColorDot)[];
+/**
 */
 export class ColorDot {
   free(): void;
@@ -147,6 +151,7 @@ export interface InitOutput {
   readonly get_gamut_cage: (a: number, b: number, c: number, d: number) => void;
   readonly __wbg_point2_free: (a: number) => void;
   readonly get_isotherm: (a: number, b: number) => void;
+  readonly get_luma_steps: (a: number) => void;
   readonly __wbg_set_point2_x: (a: number, b: number) => void;
   readonly __wbg_set_point2_y: (a: number, b: number) => void;
   readonly __wbg_get_point2_x: (a: number) => number;

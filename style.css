@@ -1,3 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+body{
+	font-family: "Roboto", sans-serif;
+	font-weight: 400;
+	font-style: normal;
+}
+
+
 #canvas-container{
 	position: absolute;
 	z-index: -10;
@@ -14,13 +23,31 @@ canvas {
 	right: 0px;
 	z-index: 100;
 	display: block;
-	background-color: rgba(0,0,0,0.3);
+	background-color: rgba(0,0,0,0.7);
 	padding: 20px;
 	color: white;
 
 	width: 20%;
 	height: 100%;
 	overflow: scroll;
+}
+
+.subpanel{
+	background-color: #bbb;
+	color: #222;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+
+	border-radius: 5px;
+
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+
+.subpanel h2{
+	margin: 0px;
 }
 
 /* .pole-picker {
@@ -39,3 +66,19 @@ canvas {
 	flex-wrap: wrap;
 	margin-right:130px;
 }
+
+.obj-btn {
+	border-radius: 10px;
+	border: none;
+}
+.obj-btn:hover{
+	background-color: #222;
+	color: #eee;
+}
+
+.add-btn {
+	background-color: #eee;
+	color: #222;
+	font-weight: bold;
+}
+

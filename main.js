@@ -10,12 +10,16 @@ import Pickr from '@simonwep/pickr';
 import init,{
 	my_init_function,get_neutral,temp_boost, 
 	JSCol, get_meshed_triangle,color_to_dot,
-	get_gamut_cage, get_isotherm} from './pkg/hycol_tool.js';
+	get_gamut_cage, get_isotherm, get_luma_steps} from './pkg/hycol_tool.js';
 
 
 init().then(()=>{
 
 	my_init_function();
+
+	const vcol_lines_material = new THREE.LineBasicMaterial({
+		vertexColors:true
+	})
 
 
 	const scene = new THREE.Scene();
@@ -26,6 +30,64 @@ init().then(()=>{
 		fsize, -fsize,
 		0.1,1000
 	) 
+
+
+	const infinity_points = new THREE.EllipseCurve(
+		0,  0,            // ax, aY
+		1, 1,           // xRadius, yRadius
+		0,  2 * Math.PI,  // aStartAngle, aEndAngle
+		true,            // aClockwise
+		0                 // aRotation
+	).getPoints( 64 );
+	const infinity = new THREE.Line( 
+		new THREE.BufferGeometry().setFromPoints( infinity_points ),
+		new THREE.LineDashedMaterial( { color: 0x444444 , gapSize:0.06,dashSize:0.04} )
+		 );
+	infinity.computeLineDistances();
+	
+	infinity.setRotationFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI/2.);
+	scene.add(infinity);
+
+	for(let i=0; i<4; i++){
+		let st = new SpriteText("∞",0.05,"#444");
+		let ang = Math.PI * i / 2;
+		st.position.set(Math.cos(ang),0.04,Math.sin(ang));
+		scene.add(st);
+	}
+
+
+	const value_pts = [];
+	const value_cols = [];
+	for(let grey of get_luma_steps()){
+
+		let y = grey.posy;
+		console.log(y);
+		let col = grey.color;
+
+		const thstep = Math.PI / 12;
+		const valr = 0.2;
+		
+		value_pts.push(-valr,y,0);
+		value_pts.push(valr,y,0);
+		value_pts.push(0,y,-valr);
+		value_pts.push(0,y,valr);
+		
+
+		for(let i = 0; i<4;i++){
+			value_cols.push(col.rfloat(),col.gfloat(),col.bfloat());
+		}
+		
+	}
+	const values_geom = new THREE.BufferGeometry();
+	values_geom.setAttribute('position',new THREE.BufferAttribute(new Float32Array(value_pts),3));
+	values_geom.setAttribute('color',new THREE.BufferAttribute(new Float32Array(value_cols),3));
+	const values = new THREE.LineSegments(
+		values_geom,
+		vcol_lines_material
+	);
+	scene.add(values);
+
+
 
 	const N0label = new SpriteText("N0",0.05,"#000");
 	scene.add(N0label);
@@ -50,7 +112,7 @@ init().then(()=>{
 		console.log("adding field");
 		let idx = fields.length;
 
-		fields.push([0,1,2]);
+		fields.push([0,0,0]);
 
 		var field_selector = document.createElement("div");
 		field_selector.setAttribute('class','field-selector');
@@ -62,6 +124,8 @@ init().then(()=>{
 				fields[idx][cidx] = this.value;
 				updateDots();
 			});
+
+			csel.value = 0;
 			
 			field_selector.appendChild(csel);
 
@@ -70,6 +134,8 @@ init().then(()=>{
 		document.querySelector("#fields").appendChild(field_selector);
 
 		updateDots();
+
+		
 	}
 	document.querySelector("#add_field").addEventListener("click",add_field);
 
@@ -157,11 +223,9 @@ init().then(()=>{
 	scene.add(lines);
 
 
-	const gamut_material = new THREE.LineBasicMaterial({
-		vertexColors:true
-	})
+	
 	const gamut_geom = new THREE.BufferGeometry();
-	const gamut = new THREE.LineSegments(gamut_geom,gamut_material);
+	const gamut = new THREE.LineSegments(gamut_geom,vcol_lines_material);
 	scene.add(gamut);
 
 	document.querySelector("#display_cage").addEventListener("change",function(){
@@ -172,6 +236,9 @@ init().then(()=>{
 	});
 	document.querySelector("#display_isotherms").addEventListener("change",function(){
 		isotherms.visible = this.checked;
+	});
+	document.querySelector("#display_values").addEventListener("change",function(){
+		values.visible = this.checked;
 	});
 
 
