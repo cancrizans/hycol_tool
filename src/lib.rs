@@ -1,7 +1,10 @@
+#[macro_use]
+extern crate lazy_static;
 extern crate console_error_panic_hook;
 use std::panic;
 
-use hycol::{Hycol,SRGB,meshed_triangle, HYPER_R};
+use hycol::{Hycol,SRGB,meshed_triangle, HYPER_R, D50_CHROMA};
+use hycol::hyperbolic::{HPoint, HTransform};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::Clamped;
 use web_sys::{CanvasRenderingContext2d, ImageData};
@@ -11,6 +14,10 @@ use num_complex::Complex;
 pub fn my_init_function() {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
 }
+
+
+
+
 
 
 #[wasm_bindgen]
@@ -87,6 +94,11 @@ pub struct ColorDot{
     pub posz : f64
 }
 
+impl ColorDot{
+    fn hpoint(&self) -> HPoint{
+        HPoint(Complex{re:self.posx,im:self.posz})
+    }
+}
 
 
 impl From<Hycol> for ColorDot{
@@ -99,6 +111,79 @@ impl From<Hycol> for ColorDot{
         }
     }
 }
+
+
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
+pub struct Frame{
+    center : HPoint,
+    transform_to : HTransform,
+    transform_from : HTransform
+}
+
+fn transform_dot(transf: HTransform, d: &ColorDot) -> ColorDot{
+    let w = d.hpoint();
+    let wprime = transf * w;
+
+    ColorDot{
+        color:d.color,
+        posx:wprime.0.re,
+        posy:d.posy,
+        posz:wprime.0.im
+    }
+}
+
+impl Frame{
+    pub fn from_hpoint_center(hcent:HPoint) -> Self{
+        Self::new(hcent.0.re,hcent.0.im)
+    }
+}
+
+#[wasm_bindgen]
+impl Frame{
+    pub fn new(center_re : f64, center_im : f64) -> Frame{
+        let center = HPoint(Complex{re:center_re,im:center_im});
+
+        Frame { 
+            center, 
+            transform_to: HTransform::to_frame(center),
+            transform_from: HTransform::from_frame(center) 
+        }
+    }
+
+    
+
+    pub fn center_dot(&self, luma : f64) -> ColorDot{
+        let hcol = Hycol{luma, chroma: self.center};
+        assert!(SRGB::from(hcol).in_gamut());
+        hcol.into()
+    }
+
+    pub fn transform_from(&self, d: &ColorDot) -> ColorDot{
+        transform_dot(self.transform_from, d)
+    }
+
+    pub fn transform_to(&self, d: &ColorDot) -> ColorDot{
+        transform_dot(self.transform_to, d)
+    }
+
+    pub fn transform_to_array(&self, dots: Vec<ColorDot>) -> Vec<ColorDot>{
+        dots.iter().map(|d|self.transform_to(d)).collect()
+    }
+
+    pub fn get_d65()->Frame{
+        Frame::new(0.0,0.0)
+    }
+    pub fn get_skin()->Frame{
+        Frame::from_hpoint_center(HPoint::SKIN_CENTER)
+    }
+    pub fn get_d50()->Frame{
+        Frame::from_hpoint_center(*D50_CHROMA)
+    }
+}
+
+
+
 
 
 #[wasm_bindgen]
@@ -224,6 +309,22 @@ pub fn temp_boost(d:&ColorDot, t:f64)->ColorDot{
     }
 }
 
+
+lazy_static! {
+    static ref TO_SKINFRAME : HTransform = HTransform::to_frame(HPoint::SKIN_CENTER);
+}
+
+#[wasm_bindgen]
+pub fn skin_frame_boost(d: &ColorDot) -> ColorDot{
+    let w : Complex<f64> = Complex{re:d.posx,im:d.posz};
+    let wboost = (*TO_SKINFRAME*HPoint(w)).0;
+
+    ColorDot{
+        posx:wboost.re,posy:d.posy,posz:wboost.im,color:d.color
+    }
+}
+
+
 #[wasm_bindgen]
 pub fn get_meshed_triangle(
             v1 : JSCol,
@@ -238,7 +339,11 @@ pub fn get_meshed_triangle(
 }
 
 #[wasm_bindgen]
-pub fn get_gamut_cage(seg_idx: usize,temperature : f64, subd:usize) -> Vec<ColorDot>{
+pub fn get_gamut_cage(
+    seg_idx: usize,
+    frame : &Frame, 
+    subd:usize) -> Vec<ColorDot>{
+
     let (c1,c2) = [
         (SRGB::BLACK, SRGB::RED),
         (SRGB::BLACK, SRGB::GREEN),
@@ -259,9 +364,9 @@ pub fn get_gamut_cage(seg_idx: usize,temperature : f64, subd:usize) -> Vec<Color
     
 
     (0..subd).map(|i| 
-        temp_boost(
+        frame.transform_to(
             &Hycol::from(SRGB::gamma_lerp2(c1,c2,(i as f64)/((subd-1) as f64))).into(), 
-            temperature)
+        )
     ).collect()
 }
 

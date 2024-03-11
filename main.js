@@ -8,9 +8,10 @@ import Pickr from '@simonwep/pickr';
 
 
 import init,{
-	my_init_function,get_neutral,temp_boost, 
+	my_init_function, 
 	JSCol, get_meshed_triangle,color_to_dot,
-	get_gamut_cage, get_isotherm, get_luma_steps} from './pkg/hycol_tool.js';
+	get_gamut_cage, get_isotherm, get_luma_steps,
+	skin_frame_boost,Frame} from './pkg/hycol_tool.js';
 
 
 init().then(()=>{
@@ -30,6 +31,24 @@ init().then(()=>{
 		fsize, -fsize,
 		0.1,1000
 	) 
+
+
+	const named_frames = {
+		'D65': Frame.get_d65(),
+		'D50': Frame.get_d50(),
+		'SKN': Frame.get_skin()
+	};
+
+	var frame = named_frames['D65'];
+
+	const wp_luma = 80.;
+	var frame_labels = {};
+	for(const [name,_] of Object.entries(named_frames)){
+		frame_labels[name] = new SpriteText(name,0.05,"#000");
+		scene.add(frame_labels[name]);
+	}
+
+	
 
 
 	const infinity_points = new THREE.EllipseCurve(
@@ -89,15 +108,16 @@ init().then(()=>{
 
 
 
-	const N0label = new SpriteText("N0",0.05,"#000");
-	scene.add(N0label);
-	const N0dot = get_neutral(0.0);
+	// const N0label = new SpriteText("N0",0.05,"#000");
+	// scene.add(N0label);
+	// const N0dot = get_neutral(0.0);
 	
-	const NWlabel = new SpriteText("NW",0.05,"#200");
-	scene.add(NWlabel);
-	const NWdot = get_neutral(0.25);
+	// const NWlabel = new SpriteText("NW",0.05,"#200");
+	// scene.add(NWlabel);
+	// const NWdot = get_neutral(0.25);
 
 	var temperature = 0.0;
+	var in_skinframe = false;
 
 	var polar_pickers = [];
 	var poles = [
@@ -207,6 +227,7 @@ init().then(()=>{
 
 
 
+
 	document.querySelector("#add_pole").addEventListener("click",add_pole);
 	
 
@@ -240,6 +261,10 @@ init().then(()=>{
 	document.querySelector("#display_values").addEventListener("change",function(){
 		values.visible = this.checked;
 	});
+	// document.querySelector("#skinframe").addEventListener("change",function(){
+	// 	in_skinframe = this.checked;
+	// 	updateDots();
+	// });
 
 
 	function pkdcol_to_jscol(pkdcol){
@@ -251,25 +276,38 @@ init().then(()=>{
 	add_pole();
 
 	
-
+	function to_frame_boost(dot){
+		if(in_skinframe){
+			return skin_frame_boost(dot);
+		}
+		else{
+			return dot;
+		}
+	}
 
 	function updateDots(){
 		let dotsbuff = [];
 
+
+		for(const [name,fr] of Object.entries(named_frames)){
+			let dot = fr.center_dot(wp_luma);
+			let trdot = frame.transform_to(dot);
+
+			frame_labels[name].position.set(trdot.posx,0,trdot.posz);
+		}
 		
-		let boosted_N0 = temp_boost(N0dot,temperature);
-		N0label.position.set(boosted_N0.posx,0,boosted_N0.posz);
-		let boosted_NW = temp_boost(NWdot,temperature);
-		NWlabel.position.set(boosted_NW.posx,0,boosted_NW.posz);
+		// let boosted_N0 = to_frame_boost(N0dot);
+		// N0label.position.set(boosted_N0.posx,0,boosted_N0.posz);
+		// let boosted_NW = to_frame_boost(NWdot);
+		// NWlabel.position.set(boosted_NW.posx,0,boosted_NW.posz);
 
 
-		let verts = [];
-		let cols = [];
+		
 		let lineverts = [];
 
 		for(const [pidx,pole] of poles.entries()){
 			let poledot = color_to_dot(pkdcol_to_jscol(pole));
-			const pb = temp_boost(poledot,temperature);
+			const pb = frame.transform_to(poledot);
 			lineverts.push(pb.posx);
 			lineverts.push(pb.posy);
 			lineverts.push(pb.posz);
@@ -298,16 +336,15 @@ init().then(()=>{
 				pkdcol_to_jscol(p2),
 				pkdcol_to_jscol(p3),7);
 
-			for(const col of triangle){
-				dotsbuff.push(col);
-
-			}
-
+			dotsbuff.push(...triangle);
+			
 			
 		}
 
-		for(const dot of dotsbuff){
-			const cb = temp_boost(dot,temperature);
+		const boosted_dotsbuff = frame.transform_to_array(dotsbuff);
+		let verts = [];
+		let cols = [];
+		for(const cb of boosted_dotsbuff){
 
 			verts.push(cb.posx);
 			verts.push(cb.posy);
@@ -360,17 +397,19 @@ init().then(()=>{
 	scene.add(isotherms);
 
 
-	function update_neutral(){
-		var neut_dot = get_neutral(temperature);
-		var neutral = neut_dot.color.to_hex();
-		document.querySelector("#neutral-temp-lbl").innerHTML = temperature;
-		scene.background = new THREE.Color(neutral);
+	function update_frame(){
+		var neut_dot = frame.center_dot(wp_luma);
+		var neutral = neut_dot.color;
+		//console.log(neutral);
+		// document.querySelector("#neutral-temp-lbl").innerHTML = temperature;
+		scene.background = new THREE.Color(
+			neutral.rfloat(),neutral.gfloat(),neutral.bfloat());
 
 		
 		let gamut_verts = [];
 		let gamut_cols = [];
 		for(let k=0; k<12;k++){
-			let seg = get_gamut_cage(k,temperature,16);
+			let seg = get_gamut_cage(k,frame,16);
 			for(let i=0; i<seg.length-1; i++){
 				let pa = seg[i];
 				let pb = seg[i+1];
@@ -396,7 +435,7 @@ init().then(()=>{
 		let isoth_verts = [];
 
 		for(let temp = -1.2; temp <= 1.75; temp += 0.25){
-			let deltatemp = temp - temperature;
+			let deltatemp = temp;
 			let isopts = get_isotherm(deltatemp);
 			
 			for(let i = 0; i<isopts.length-1;i++){
@@ -417,21 +456,32 @@ init().then(()=>{
 		updateDots();
 	}
 
-	function set_neutral(temp){
-		temperature = temp;
-		update_neutral();
+	function set_frame(new_frame){
+		frame = new_frame;
+		update_frame();
 	}
 
-	set_neutral(0.0);
+	const fselect_container = document.querySelector("#frame-selectors");
+	for(const [name,fr] of Object.entries(named_frames)){
+		let but = document.createElement('button');
+		but.innerText = name;
+		but.addEventListener('click',()=>{
+			frame = fr;
+			update_frame();
+		});
+		fselect_container.appendChild(but);
+	}
 
-	const neutempsldr = document.querySelector("#neutral-temp");
+	set_frame(named_frames['D65']);
+
+	// const neutempsldr = document.querySelector("#neutral-temp");
 
 	
 
-	neutempsldr.addEventListener("change",(event)=>{
-			var temp = event.target.value
-			set_neutral(temp);
-		});
+	// neutempsldr.addEventListener("change",(event)=>{
+	// 		var temp = event.target.value
+	// 		set_frame(temp);
+	// 	});
 
 	const renderer = new THREE.WebGLRenderer();
 	renderer.outputEncoding = THREE.sRGBEncoding;
@@ -472,7 +522,8 @@ init().then(()=>{
 			let s = Math.sin(theta);
 			let c = Math.cos(theta);
 
-			hue_pts.push(0,0,0);
+			const smur = 0.1;
+			hue_pts.push(smur*c,0,smur*s);
 			const hur = 0.7;
 			hue_pts.push(hur*c,0,hur*s);
 		}

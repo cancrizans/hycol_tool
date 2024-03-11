@@ -43,6 +43,11 @@ export function color_to_dot(col: JSCol): ColorDot;
 */
 export function temp_boost(d: ColorDot, t: number): ColorDot;
 /**
+* @param {ColorDot} d
+* @returns {ColorDot}
+*/
+export function skin_frame_boost(d: ColorDot): ColorDot;
+/**
 * @param {JSCol} v1
 * @param {JSCol} v2
 * @param {JSCol} v3
@@ -52,11 +57,11 @@ export function temp_boost(d: ColorDot, t: number): ColorDot;
 export function get_meshed_triangle(v1: JSCol, v2: JSCol, v3: JSCol, n: number): (ColorDot)[];
 /**
 * @param {number} seg_idx
-* @param {number} temperature
+* @param {Frame} frame
 * @param {number} subd
 * @returns {(ColorDot)[]}
 */
-export function get_gamut_cage(seg_idx: number, temperature: number, subd: number): (ColorDot)[];
+export function get_gamut_cage(seg_idx: number, frame: Frame, subd: number): (ColorDot)[];
 /**
 * @param {number} temperature
 * @returns {(Point2)[]}
@@ -82,6 +87,49 @@ export class ColorDot {
 /**
 */
   posz: number;
+}
+/**
+*/
+export class Frame {
+  free(): void;
+/**
+* @param {number} center_re
+* @param {number} center_im
+* @returns {Frame}
+*/
+  static new(center_re: number, center_im: number): Frame;
+/**
+* @param {number} luma
+* @returns {ColorDot}
+*/
+  center_dot(luma: number): ColorDot;
+/**
+* @param {ColorDot} d
+* @returns {ColorDot}
+*/
+  transform_from(d: ColorDot): ColorDot;
+/**
+* @param {ColorDot} d
+* @returns {ColorDot}
+*/
+  transform_to(d: ColorDot): ColorDot;
+/**
+* @param {(ColorDot)[]} dots
+* @returns {(ColorDot)[]}
+*/
+  transform_to_array(dots: (ColorDot)[]): (ColorDot)[];
+/**
+* @returns {Frame}
+*/
+  static get_d65(): Frame;
+/**
+* @returns {Frame}
+*/
+  static get_skin(): Frame;
+/**
+* @returns {Frame}
+*/
+  static get_d50(): Frame;
 }
 /**
 */
@@ -142,11 +190,21 @@ export interface InitOutput {
   readonly __wbg_set_colordot_posy: (a: number, b: number) => void;
   readonly __wbg_get_colordot_posz: (a: number) => number;
   readonly __wbg_set_colordot_posz: (a: number, b: number) => void;
+  readonly __wbg_frame_free: (a: number) => void;
+  readonly frame_new: (a: number, b: number) => number;
+  readonly frame_center_dot: (a: number, b: number) => number;
+  readonly frame_transform_from: (a: number, b: number) => number;
+  readonly frame_transform_to: (a: number, b: number) => number;
+  readonly frame_transform_to_array: (a: number, b: number, c: number, d: number) => void;
+  readonly frame_get_d65: () => number;
+  readonly frame_get_skin: () => number;
+  readonly frame_get_d50: () => number;
   readonly draw_triangle: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly draw_meshed_triangle: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly get_neutral: (a: number) => number;
   readonly color_to_dot: (a: number) => number;
   readonly temp_boost: (a: number, b: number) => number;
+  readonly skin_frame_boost: (a: number) => number;
   readonly get_meshed_triangle: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly get_gamut_cage: (a: number, b: number, c: number, d: number) => void;
   readonly __wbg_point2_free: (a: number) => void;

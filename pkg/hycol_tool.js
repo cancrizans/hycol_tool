@@ -200,6 +200,36 @@ function _assertClass(instance, klass) {
     return instance.ptr;
 }
 
+let cachedUint32Memory0 = null;
+
+function getUint32Memory0() {
+    if (cachedUint32Memory0 === null || cachedUint32Memory0.byteLength === 0) {
+        cachedUint32Memory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachedUint32Memory0;
+}
+
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    const mem = getUint32Memory0();
+    for (let i = 0; i < array.length; i++) {
+        mem[ptr / 4 + i] = addHeapObject(array[i]);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getUint32Memory0();
+    const slice = mem.subarray(ptr / 4, ptr / 4 + len);
+    const result = [];
+    for (let i = 0; i < slice.length; i++) {
+        result.push(takeObject(slice[i]));
+    }
+    return result;
+}
+
 let stack_pointer = 128;
 
 function addBorrowedObject(obj) {
@@ -280,25 +310,16 @@ export function temp_boost(d, t) {
     return ColorDot.__wrap(ret);
 }
 
-let cachedUint32Memory0 = null;
-
-function getUint32Memory0() {
-    if (cachedUint32Memory0 === null || cachedUint32Memory0.byteLength === 0) {
-        cachedUint32Memory0 = new Uint32Array(wasm.memory.buffer);
-    }
-    return cachedUint32Memory0;
+/**
+* @param {ColorDot} d
+* @returns {ColorDot}
+*/
+export function skin_frame_boost(d) {
+    _assertClass(d, ColorDot);
+    const ret = wasm.skin_frame_boost(d.__wbg_ptr);
+    return ColorDot.__wrap(ret);
 }
 
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getUint32Memory0();
-    const slice = mem.subarray(ptr / 4, ptr / 4 + len);
-    const result = [];
-    for (let i = 0; i < slice.length; i++) {
-        result.push(takeObject(slice[i]));
-    }
-    return result;
-}
 /**
 * @param {JSCol} v1
 * @param {JSCol} v2
@@ -328,14 +349,15 @@ export function get_meshed_triangle(v1, v2, v3, n) {
 
 /**
 * @param {number} seg_idx
-* @param {number} temperature
+* @param {Frame} frame
 * @param {number} subd
 * @returns {(ColorDot)[]}
 */
-export function get_gamut_cage(seg_idx, temperature, subd) {
+export function get_gamut_cage(seg_idx, frame, subd) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        wasm.get_gamut_cage(retptr, seg_idx, temperature, subd);
+        _assertClass(frame, Frame);
+        wasm.get_gamut_cage(retptr, seg_idx, frame.__wbg_ptr, subd);
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
         var v1 = getArrayJsValueFromWasm0(r0, r1).slice();
@@ -418,6 +440,13 @@ export class ColorDot {
         return obj;
     }
 
+    static __unwrap(jsValue) {
+        if (!(jsValue instanceof ColorDot)) {
+            return 0;
+        }
+        return jsValue.__destroy_into_raw();
+    }
+
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
@@ -482,6 +511,109 @@ export class ColorDot {
     */
     set posz(arg0) {
         wasm.__wbg_set_colordot_posz(this.__wbg_ptr, arg0);
+    }
+}
+
+const FrameFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_frame_free(ptr >>> 0));
+/**
+*/
+export class Frame {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Frame.prototype);
+        obj.__wbg_ptr = ptr;
+        FrameFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        FrameFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_frame_free(ptr);
+    }
+    /**
+    * @param {number} center_re
+    * @param {number} center_im
+    * @returns {Frame}
+    */
+    static new(center_re, center_im) {
+        const ret = wasm.frame_new(center_re, center_im);
+        return Frame.__wrap(ret);
+    }
+    /**
+    * @param {number} luma
+    * @returns {ColorDot}
+    */
+    center_dot(luma) {
+        const ret = wasm.frame_center_dot(this.__wbg_ptr, luma);
+        return ColorDot.__wrap(ret);
+    }
+    /**
+    * @param {ColorDot} d
+    * @returns {ColorDot}
+    */
+    transform_from(d) {
+        _assertClass(d, ColorDot);
+        const ret = wasm.frame_transform_from(this.__wbg_ptr, d.__wbg_ptr);
+        return ColorDot.__wrap(ret);
+    }
+    /**
+    * @param {ColorDot} d
+    * @returns {ColorDot}
+    */
+    transform_to(d) {
+        _assertClass(d, ColorDot);
+        const ret = wasm.frame_transform_to(this.__wbg_ptr, d.__wbg_ptr);
+        return ColorDot.__wrap(ret);
+    }
+    /**
+    * @param {(ColorDot)[]} dots
+    * @returns {(ColorDot)[]}
+    */
+    transform_to_array(dots) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passArrayJsValueToWasm0(dots, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.frame_transform_to_array(retptr, this.__wbg_ptr, ptr0, len0);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v2 = getArrayJsValueFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            return v2;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @returns {Frame}
+    */
+    static get_d65() {
+        const ret = wasm.frame_get_d65();
+        return Frame.__wrap(ret);
+    }
+    /**
+    * @returns {Frame}
+    */
+    static get_skin() {
+        const ret = wasm.frame_get_skin();
+        return Frame.__wrap(ret);
+    }
+    /**
+    * @returns {Frame}
+    */
+    static get_d50() {
+        const ret = wasm.frame_get_d50();
+        return Frame.__wrap(ret);
     }
 }
 
@@ -654,16 +786,20 @@ function __wbg_get_imports() {
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
     };
+    imports.wbg.__wbg_colordot_unwrap = function(arg0) {
+        const ret = ColorDot.__unwrap(takeObject(arg0));
+        return ret;
+    };
     imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
         const ret = getStringFromWasm0(arg0, arg1);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_point2_new = function(arg0) {
-        const ret = Point2.__wrap(arg0);
-        return addHeapObject(ret);
-    };
     imports.wbg.__wbg_colordot_new = function(arg0) {
         const ret = ColorDot.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_point2_new = function(arg0) {
+        const ret = Point2.__wrap(arg0);
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_setfillStyle_59f426135f52910f = function(arg0, arg1) {
