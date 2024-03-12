@@ -151,12 +151,33 @@ impl Frame{
         }
     }
 
-    
+    pub fn from_neutral(color:&JSCol)->Frame{
+        let hcol : Hycol = (*color).into();
+        let chroma_center = hcol.chroma;
+        Frame::new(
+            chroma_center.0.re,
+            chroma_center.0.im
+        )
+    }
 
-    pub fn center_dot(&self, luma : f64) -> ColorDot{
-        let hcol = Hycol{luma, chroma: self.center};
-        assert!(SRGB::from(hcol).in_gamut());
-        hcol.into()
+    pub fn center_dot(&self, try_luma : f64) -> ColorDot{
+        let mut luma = try_luma;
+        for _ in 0..30{
+            let hcol = Hycol{luma, chroma: self.center};
+            let srgb:SRGB = hcol.into();
+
+            if srgb.sub_gamut(){
+                luma += 2.5;
+            }
+            else if srgb.super_gamut(){
+                luma -= 2.5;
+            }
+            else{
+                return hcol.into();
+            }
+            
+        }
+        Hycol::from(SRGB::WHITE).into()
     }
 
     pub fn transform_from(&self, d: &ColorDot) -> ColorDot{

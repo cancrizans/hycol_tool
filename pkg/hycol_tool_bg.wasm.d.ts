@@ -19,6 +19,7 @@ export function __wbg_get_colordot_posz(a: number): number;
 export function __wbg_set_colordot_posz(a: number, b: number): void;
 export function __wbg_frame_free(a: number): void;
 export function frame_new(a: number, b: number): number;
+export function frame_from_neutral(a: number): number;
 export function frame_center_dot(a: number, b: number): number;
 export function frame_transform_from(a: number, b: number): number;
 export function frame_transform_to(a: number, b: number): number;

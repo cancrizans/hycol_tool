@@ -550,11 +550,20 @@ export class Frame {
         return Frame.__wrap(ret);
     }
     /**
-    * @param {number} luma
+    * @param {JSCol} color
+    * @returns {Frame}
+    */
+    static from_neutral(color) {
+        _assertClass(color, JSCol);
+        const ret = wasm.frame_from_neutral(color.__wbg_ptr);
+        return Frame.__wrap(ret);
+    }
+    /**
+    * @param {number} try_luma
     * @returns {ColorDot}
     */
-    center_dot(luma) {
-        const ret = wasm.frame_center_dot(this.__wbg_ptr, luma);
+    center_dot(try_luma) {
+        const ret = wasm.frame_center_dot(this.__wbg_ptr, try_luma);
         return ColorDot.__wrap(ret);
     }
     /**

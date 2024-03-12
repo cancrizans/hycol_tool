@@ -116,7 +116,7 @@ init().then(()=>{
 	// scene.add(NWlabel);
 	// const NWdot = get_neutral(0.25);
 
-	var temperature = 0.0;
+	
 	var in_skinframe = false;
 
 	var polar_pickers = [];
@@ -159,24 +159,10 @@ init().then(()=>{
 	}
 	document.querySelector("#add_field").addEventListener("click",add_field);
 
-	function add_pole(){
-		let i = poles.length;
-		var polpick = document.createElement("div");
-		polpick.setAttribute('class','pole-picker');
-		document.querySelector("#poles").appendChild(polpick);
 
-
-		
-		// var pckr = new Picker(polpick);
-		// pckr.setOptions({popup:'down'});
-		// pckr.setColor("#aaaaaa");
-
-		let pckr_el = document.createElement("div");
-		pckr_el.setAttribute('id','replacepickr');
-		polpick.appendChild(pckr_el);
-
-		let pckr = Pickr.create({
-			el:"#replacepickr",
+	function make_pickr(el){
+		return  Pickr.create({
+			el:el,
 			container:document.body,
 			theme:'nano',
 			inline:false,
@@ -197,6 +183,26 @@ init().then(()=>{
 			position:'left-middle',
 			autoReposition:false
 		});
+	}
+
+
+	function add_pole(){
+		let i = poles.length;
+		var polpick = document.createElement("div");
+		polpick.setAttribute('class','pole-picker');
+		document.querySelector("#poles").appendChild(polpick);
+
+		
+		
+		// var pckr = new Picker(polpick);
+		// pckr.setOptions({popup:'down'});
+		// pckr.setColor("#aaaaaa");
+
+		let pckr_el = document.createElement("div");
+		pckr_el.setAttribute('id','replacepickr');
+		polpick.appendChild(pckr_el);
+
+		const pckr = make_pickr("#replacepickr")
 
 		pckr.on('change', function(color,_,__){
 			//polpick.style.background = color.rgbaString;
@@ -471,6 +477,14 @@ init().then(()=>{
 		});
 		fselect_container.appendChild(but);
 	}
+
+	let framefrompckr = make_pickr("#frame-from-picker");
+	document.querySelector("#get-frame-from-picked").addEventListener("click",()=>{
+		
+		let color = pkdcol_to_jscol(framefrompckr.getColor());
+		set_frame(Frame.from_neutral(color));
+		
+	});
 
 	set_frame(named_frames['D65']);
 

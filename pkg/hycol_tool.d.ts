@@ -99,10 +99,15 @@ export class Frame {
 */
   static new(center_re: number, center_im: number): Frame;
 /**
-* @param {number} luma
+* @param {JSCol} color
+* @returns {Frame}
+*/
+  static from_neutral(color: JSCol): Frame;
+/**
+* @param {number} try_luma
 * @returns {ColorDot}
 */
-  center_dot(luma: number): ColorDot;
+  center_dot(try_luma: number): ColorDot;
 /**
 * @param {ColorDot} d
 * @returns {ColorDot}
@@ -192,6 +197,7 @@ export interface InitOutput {
   readonly __wbg_set_colordot_posz: (a: number, b: number) => void;
   readonly __wbg_frame_free: (a: number) => void;
   readonly frame_new: (a: number, b: number) => number;
+  readonly frame_from_neutral: (a: number) => number;
   readonly frame_center_dot: (a: number, b: number) => number;
   readonly frame_transform_from: (a: number, b: number) => number;
   readonly frame_transform_to: (a: number, b: number) => number;
