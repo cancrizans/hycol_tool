@@ -1,7 +1,7 @@
 import init, {
     my_init_function, 
     make_jscol, 
-    draw_triangle,draw_meshed_triangle} from './pkg/hycol_tool.js';
+    draw_triangle,draw_meshed_triangle} from '../pkg/hycol_tool.js';
 
 
 init().then((_exports) => {
