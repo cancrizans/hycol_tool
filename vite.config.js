@@ -1,10 +1,7 @@
 const { resolve } = require('path')
 
 export default{
-    base: '/hycol_tool/'
-}
-
-module.exports = {
+    base: '/hycol_tool/',
     build: {
       rollupOptions: {
         input: {
