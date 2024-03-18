@@ -8,8 +8,8 @@ module.exports = {
     build: {
       rollupOptions: {
         input: {
-          
-          triangle: resolve(__dirname, 'triangle')
+            main: resolve(__dirname, 'index.html'),
+            triangle: resolve(__dirname, 'triangle/index.html')
         }
       }
     }
