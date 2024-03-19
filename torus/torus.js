@@ -68,10 +68,12 @@ controls.enableDamping = true;
 
 
 const torus_material = new THREE.MeshBasicMaterial( { color: 
-    new THREE.Color(0.4809389334951016, 0.3848914661542852, 0.3141002686355735)
+    new THREE.Color(0.4809389334951016, 0.3848914661542852, 0.3141002686355735),
+    transparent:true,
+    opacity:0.5
 } );
 
-const R1 = 0.25;
+const R1 = 0.4;
 const torus_geometry = new THREE.TorusGeometry( 1.0, R1*0.9, 16, 100 ); 
 const torus = new THREE.Mesh(torus_geometry,torus_material)
 torus.rotateX(Math.PI/2.);
