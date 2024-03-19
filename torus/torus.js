@@ -25,29 +25,38 @@ const reptones = [
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 
     75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-const canvas = document.querySelector('#torus_canvas');
+// const canvas = document.querySelector('#torus_canvas');
 
 
-const renderer = new THREE.WebGLRenderer( 
-    { canvas: canvas } 
+const renderer = new THREE.WebGLRenderer(
     );
 
-function resizeCanvasToDisplaySize() {
-    const canvas = renderer.domElement;
-    // look up the size the canvas is being displayed
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    
-    // you must pass false here or three.js sadly fights the browser
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    
-    // update any render target sizes here
-    }
-const resizeObserver = new ResizeObserver(resizeCanvasToDisplaySize);
-resizeObserver.observe(canvas, {box: 'content-box'});
+document.body.appendChild( renderer.domElement );
+const canvas = renderer.domElement;
+renderer.setSize( window.innerWidth, window.innerHeight );
 
+// function resizeCanvasToDisplaySize() {
+//     const canvas = renderer.domElement;
+//     // look up the size the canvas is being displayed
+//     const width = canvas.clientWidth;
+//     const height = canvas.clientHeight;
+    
+//     // you must pass false here or three.js sadly fights the browser
+//     renderer.setSize(width, height, false);
+//     camera.aspect = width / height;
+//     camera.updateProjectionMatrix();
+    
+//     // update any render target sizes here
+//     }
+// const resizeObserver = new ResizeObserver(resizeCanvasToDisplaySize);
+// resizeObserver.observe(window, {box: 'content-box'});
+addEventListener("resize",(_)=>{
+		
+    camera.aspect = window.innerWidth / window.innerHeight;
+         camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+});
 
 
 const controls = new OrbitControls( camera, renderer.domElement );
@@ -158,8 +167,8 @@ scene.background = new THREE.Color(0.9872231682830229, 0.8703913273915482, 0.788
 camera.position.z = 3;
 
 var draw = function () {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // canvas.width = window.innerWidth;
+    // canvas.height = window.innerHeight;
     
     requestAnimationFrame( draw );
     controls.update();
