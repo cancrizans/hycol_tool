@@ -58,6 +58,8 @@ init().then(()=>{
 		true,            // aClockwise
 		0                 // aRotation
 	).getPoints( 64 );
+
+	infinity_points.push(new THREE.Vector2(-1,0));
 	const infinity = new THREE.Line( 
 		new THREE.BufferGeometry().setFromPoints( infinity_points ),
 		new THREE.LineDashedMaterial( { color: 0x444444 , gapSize:0.06,dashSize:0.04} )
@@ -68,7 +70,8 @@ init().then(()=>{
 	scene.add(infinity);
 
 	for(let i=0; i<4; i++){
-		let st = new SpriteText("∞",0.05,"#444");
+		let idtxt = (i==0)? "W∞" : "∞";
+		let st = new SpriteText(idtxt,0.05,"#444");
 		let ang = Math.PI * i / 2;
 		st.position.set(Math.cos(ang),0.04,Math.sin(ang));
 		scene.add(st);
@@ -80,7 +83,6 @@ init().then(()=>{
 	for(let grey of get_luma_steps()){
 
 		let y = grey.posy;
-		console.log(y);
 		let col = grey.color;
 
 		const thstep = Math.PI / 12;
@@ -528,6 +530,14 @@ init().then(()=>{
 	var hue_divs = 14;
 	scene.add(hue_grid)
 
+	function update_hue_grid_rotation(){
+		let val = document.querySelector("#hue_rotation").value;
+		hue_grid.setRotationFromEuler(new THREE.Euler(0,Math.PI*2/hue_divs*val,0));
+
+
+	}
+
+
 	function update_hue_grid(){
 
 		let hue_pts = [];
@@ -547,6 +557,8 @@ init().then(()=>{
 		hue_grid_geom.getAttribute('position').needsUpdate = true;
 		hue_grid_geom.computeBoundingBox();
 		hue_grid_geom.computeBoundingSphere();
+
+		update_hue_grid_rotation();
 		console.log("Grid update");
 	}
 
@@ -559,6 +571,8 @@ init().then(()=>{
 	});
 
 	update_hue_grid();
+
+	document.querySelector("#hue_rotation").addEventListener("change",update_hue_grid_rotation);
 
 
 	camera.position.z = 3;
